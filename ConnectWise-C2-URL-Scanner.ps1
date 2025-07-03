@@ -1,7 +1,8 @@
 param (
     [string]$FilePath,
     [switch]$All,
-    [string[]]$Keywords = @("screenconnect", "instance", "relay", "&p=", "?p=", "&k=", "access", "guest", "h=")
+    [string[]]$Keywords = @("screenconnect", "instance", "relay", "&p=", "?p=", "&k=", "access", "guest", "h="),
+    [string[]]$Strings
 )
 
 try {
@@ -41,12 +42,17 @@ try {
     $printedStrings = New-Object System.Collections.Generic.HashSet[string]
     $found = $false
 
+    if ($Strings) {
+        $All = $true
+        $Keywords = $Strings
+    }
+
     foreach ($line in $ascii) {
         foreach ($k in $Keywords) {
-            if ($line -like "*$k*") {
+            if ($line -imatch $k) {
                 $clean = ($line -replace '[^a-zA-Z0-9\s\.,\-:;?\/=&%_]', '')
                 if (-not $printedStrings.Contains($clean)) {
-                    if ($All -or $clean -like "*.screenconnect.com*") {
+                    if ($All -or $clean -imatch "\.screenconnect\.com") {
                         if (-not $found) {
                             Write-Host "=== Found Suspicious Strings in File ===" -ForegroundColor Red
                             $found = $true
